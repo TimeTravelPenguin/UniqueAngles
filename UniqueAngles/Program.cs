@@ -15,7 +15,8 @@
 #endregion
 
 using System;
-using System.Linq;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace UniqueAngles
 {
@@ -23,46 +24,11 @@ namespace UniqueAngles
     {
         private static void Main(string[] args)
         {
-            #region User Input
+            var inputDimensions = 4;
+            int[] inputUpperBound = {50, 116, 154, 65};
+            int[] inputLowerBound = {30, 4, 8, 0};
 
-            Console.Write("How many dimensions: ");
-            var inputDimensionsString = Console.ReadLine();
-
-            Console.Write(Environment.NewLine + "What is the coordinate upper bound value: ");
-            var inputUpperBoundString = Console.ReadLine();
-
-            Console.Write(Environment.NewLine + "What is the coordinate lower bound value: ");
-            var inputLowerBoundString = Console.ReadLine();
-
-            var inputDimensions = 0;
-            var inputUpperBound = 0;
-            var inputLowerBound = 0;
-            var validInput = false;
-
-            #endregion
-
-            // Basic error handling
-            try
-            {
-                inputDimensions = int.Parse(inputDimensionsString ?? throw new InvalidOperationException());
-                inputUpperBound = int.Parse(inputUpperBoundString ?? throw new InvalidOperationException());
-                inputLowerBound = int.Parse(inputLowerBoundString ?? throw new InvalidOperationException());
-
-                validInput = true;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-            finally
-            {
-                if (validInput)
-                {
-                    Console.Clear();
-                    Calculate(inputDimensions, inputUpperBound, inputLowerBound);
-                }
-            }
+            Calculate(inputDimensions, inputUpperBound, inputLowerBound);
 
             Console.ReadKey(true);
         }
@@ -72,12 +38,12 @@ namespace UniqueAngles
         ///     crosses no other points. The origin to the origin is an inclusive line.
         /// </summary>
         /// <param name="dimensions">The number of dimensions greater than zero that the integer-space resides</param>
-        /// <param name="upperBound">The inclusive upper bound that any coordinate point can be</param>
-        /// <param name="lowerBound">The inclusive lower bound that any coordinate point can be</param>
-        private static void Calculate(int dimensions, int upperBound, int lowerBound = 0)
+        /// <param name="upperBounds">The inclusive upper bounds that any coordinate point can be</param>
+        /// <param name="lowerBounds">The inclusive lower bounds that any coordinate point can be</param>
+        private static void Calculate(int dimensions, int[] upperBounds, int[] lowerBounds)
         {
             // Create n-dimensional array of (lowerBound, lowerBound, ...)
-            var coords = new Coordinates(dimensions, lowerBound, upperBound);
+            var coords = new Coordinates(dimensions, lowerBounds, upperBounds);
 
             // DEMO CODE
 
@@ -88,33 +54,41 @@ namespace UniqueAngles
                     while all values are <= upperBound
              */
 
-            var count = 0;
+            var stopwatch = Stopwatch.StartNew();
 
-            while (true)
+            var combs = new List<string> {coords.StringValue()};
+            var count = 1; // inclusive of the origin 
+
+            var limit = 1;
+            for (var i = 0; i < coords.Dimensions; i++)
             {
-                foreach (var coordsCoordinateValue in coords.CoordinateValues)
-                {
-                    Console.Write(coordsCoordinateValue + " ");
-                }
+                limit *= coords.UpperBounds[i] - coords.LowerBounds[i] + 1;
+            }
 
-                Console.WriteLine();
+            for (var i = 0; i < limit - 1; i++)
+            {
+                //foreach (var coordsCoordinateValue in coords.CoordinateValues)
+                //{
+                //    Console.Write(coordsCoordinateValue + " ");
+                //}
+
+                //Console.WriteLine();
 
                 coords.Increment(0);
 
+                //combs.Add(coords.StringValue());
                 count++;
-
-                if (coords.CoordinateValues.All(x => x >= coords.UpperBound))
-                {
-                    break;
-                }
             }
 
-            foreach (var coordsCoordinateValue in coords.CoordinateValues)
-            {
-                Console.Write(coordsCoordinateValue + " ");
-            }
+            stopwatch.Stop();
 
-            Console.WriteLine($"\nDone! Count = {count}");
+            //foreach (var coordsCoordinateValue in coords.CoordinateValues)
+            //{
+            //    Console.Write(coordsCoordinateValue + " ");
+            //}
+
+            Console.WriteLine(
+                $"\nDone! Count = {count} ({combs.Count}) in {stopwatch.ElapsedMilliseconds} milliseconds");
         }
     }
 }

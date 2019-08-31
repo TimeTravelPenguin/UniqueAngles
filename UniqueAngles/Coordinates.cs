@@ -23,9 +23,9 @@ namespace UniqueAngles
     {
         public int[] CoordinateValues { get; set; }
 
-        public int UpperBound { get; set; }
+        public int[] UpperBounds { get; set; }
 
-        public int LowerBound { get; set; }
+        public int[] LowerBounds { get; set; }
 
         public int Dimensions { get; }
 
@@ -33,25 +33,28 @@ namespace UniqueAngles
         ///     Creates a collection of coordinates
         /// </summary>
         /// <param name="dimensions">The number of dimensions</param>
-        /// <param name="lowerBound">The inclusive lower bound value</param>
-        /// <param name="upperBound">The inclusive upper bound value</param>
-        public Coordinates(int dimensions, int lowerBound, int upperBound)
+        /// <param name="lowerBounds">The inclusive lower bound value</param>
+        /// <param name="upperBounds">The inclusive upper bound value</param>
+        public Coordinates(int dimensions, int[] lowerBounds, int[] upperBounds)
         {
             Dimensions = dimensions;
             CoordinateValues = new int[dimensions];
-            UpperBound = upperBound;
-            LowerBound = lowerBound;
+            UpperBounds = upperBounds;
+            LowerBounds = lowerBounds;
 
             // Check bounds
-            if (lowerBound > upperBound)
+            for (var i = 0; i < dimensions; i++)
             {
-                throw new Exception("lowerBound value cannot be larger than the upperBound value");
+                if (lowerBounds[i] > upperBounds[i])
+                {
+                    throw new Exception("lowerBound value cannot be larger than the upperBound value");
+                }
             }
 
             // Check and assign values within bounds
             for (var i = 0; i < dimensions; i++)
             {
-                CoordinateValues[i] = LowerBound;
+                CoordinateValues[i] = LowerBounds[i];
             }
         }
 
@@ -59,19 +62,23 @@ namespace UniqueAngles
         ///     Creates a collection of coordinates
         /// </summary>
         /// <param name="coordinateValues">The coordinate values</param>
-        /// <param name="lowerBound">The inclusive lower bound value</param>
-        /// <param name="upperBound">The inclusive upper bound value</param>
-        public Coordinates(int[] coordinateValues, int lowerBound, int upperBound)
+        /// <param name="lowerBounds">The inclusive lower bound value</param>
+        /// <param name="upperBounds">The inclusive upper bound value</param>
+        public Coordinates(int[] coordinateValues, int[] lowerBounds, int[] upperBounds)
         {
             CoordinateValues = coordinateValues;
             Dimensions = coordinateValues.Length;
-            UpperBound = upperBound;
-            LowerBound = lowerBound;
+            UpperBounds = upperBounds;
+            LowerBounds = lowerBounds;
 
             // Check coordinates are within bounds
-            if (CoordinateValues.Any(coordinateValue => coordinateValue < lowerBound || coordinateValue > upperBound))
+            for (var i = 0; i < Dimensions; i++)
             {
-                throw new Exception("The coordinateValues are not within the given bounds");
+                if (CoordinateValues.Any(coordinateValue =>
+                    coordinateValue < lowerBounds[Dimensions] || coordinateValue > upperBounds[Dimensions]))
+                {
+                    throw new Exception("The coordinateValues are not within the given bounds");
+                }
             }
         }
 
@@ -91,11 +98,23 @@ namespace UniqueAngles
 
             CoordinateValues[index]++;
 
-            if (CoordinateValues[index] > UpperBound)
+            if (CoordinateValues[index] > UpperBounds[index])
             {
-                CoordinateValues[index] = LowerBound;
+                CoordinateValues[index] = LowerBounds[index];
                 Increment(index + 1);
             }
+        }
+
+        internal string StringValue()
+        {
+            var value = string.Empty;
+
+            foreach (var val in CoordinateValues)
+            {
+                value += $"{val} ";
+            }
+
+            return value;
         }
     }
 }
